@@ -1,26 +1,46 @@
 package com.example.ladyg.bookstore1;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.CursorAdapter;
+
+import com.example.ladyg.bookstore1.Data.BookContract;
+
+import java.util.ArrayList;
 
 public class CatalogActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     /** Identifier for the pet data loader */
-    private static final int PET_LOADER = 0;
+    private static final int BOOK_LOADER = 0;
 
-    /** Adapter for the ListView */
-    PetCursorAdapter mCursorAdapter;
+    
+    private View recyclerView;
+    private AdapterView bookRecyclerView;
+    private CursorAdapter mCursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.example.ladyg.ericabookstorestage1.R.layout.activity_catalog);
+        setContentView(com.example.ladyg.bookstore1.R.layout.activity_catalog);
 
         // Setup FAB to open EditorActivity
-        FloatingActionButton fab = (FloatingActionButton) findViewById(com.example.ladyg.ericabookstorestage1.R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(com.example.ladyg.bookstore1.R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -29,76 +49,73 @@ public class CatalogActivity extends AppCompatActivity implements
             }
         });
 
-        // Find the ListView which will be populated with the pet data
-        ListView petListView = (ListView) findViewById(com.example.ladyg.ericabookstorestage1.R.id.list);
+        recyclerView = findViewById(R.id.recyclerview_id);
 
-        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
-        View emptyView = findViewById(com.example.ladyg.ericabookstorestage1.R.id.empty_view);
-        petListView.setEmptyView(emptyView);
 
-        // Setup an Adapter to create a list item for each row of pet data in the Cursor.
-        // There is no pet data yet (until the loader finishes) so pass in null for the Cursor.
-        mCursorAdapter = new PetCursorAdapter(this, null);
-        petListView.setAdapter(mCursorAdapter);
+        // Setup an Adapter to create a list item for each row of book data in the Cursor.
+        // There is no book data yet (until the loader finishes) so pass in null for the Cursor.
+        mCursorAdapter = new BookCursorAdapter(this, null);
+       bookRecyclerView.setAdapter(mCursorAdapter);
 
         // Setup the item click listener
-        petListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+       bookRecyclerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 // Create new intent to go to {@link EditorActivity}
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
 
-                // Form the content URI that represents the specific pet that was clicked on,
+                // Form the content URI that represents the specific book that was clicked on,
                 // by appending the "id" (passed as input to this method) onto the
-                // {@link PetEntry#CONTENT_URI}.
-                // For example, the URI would be "content://com.example.android.pets/pets/2"
-                // if the pet with ID 2 was clicked on.
-                Uri currentPetUri = ContentUris.withAppendedId(PetEntry.CONTENT_URI, id);
+                // {@link BookEntry#CONTENT_URI}.
+                // For example, the URI would be "content://com.example.android.books/books/2"
+                // if the book with ID 2 was clicked on.
+                Uri currentBookUri = ContentUris.withAppendedId(BookContract.BookEntry.CONTENT_URI, id);
 
                 // Set the URI on the data field of the intent
-                intent.setData(currentPetUri);
+                intent.setData(currentBookUri);
 
-                // Launch the {@link EditorActivity} to display the data for the current pet.
+                // Launch the {@link EditorActivity} to display the data for the current book.
                 startActivity(intent);
             }
         });
 
         // Kick off the loader
-        getLoaderManager().initLoader(PET_LOADER, null, this);
+        getLoaderManager().initLoader(BOOK_LOADER, null, this);
     }
 
     /**
-     * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
+     * Helper method to insert hardcoded book data into the database. For debugging purposes only.
      */
-    private void insertPet() {
+    private void insertBook() {
         // Create a ContentValues object where column names are the keys,
-        // and Toto's pet attributes are the values.
+        // and book attributes are the values.
         ContentValues values = new ContentValues();
-        values.put(PetEntry.COLUMN_PET_NAME, "Toto");
-        values.put(PetEntry.COLUMN_PET_BREED, "Terrier");
-        values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
-        values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
+        values.put(BookContract.BookEntry.COLUMN_PRODUCT_NAME, "Loving Dasia");
+        values.put(BookContract.BookEntry.COLUMN_PRICE, "$14.99");
+        values.put(BookContract.BookEntry.COLUMN_QUANTITY,"$5" );
+        values.put(BookContract.BookEntry.COLUMN_SUPPLIER_NAME, "Erica");
+        values.put(BookContract.BookEntry.COLUMN_SUPPLIER_PHONE_NUMBER, "800-000-0000");
 
-        // Insert a new row for Toto into the provider using the ContentResolver.
-        // Use the {@link PetEntry#CONTENT_URI} to indicate that we want to insert
-        // into the pets database table.
-        // Receive the new content URI that will allow us to access Toto's data in the future.
-        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
+        // Insert a new row for bookstore1 into the provider using the ContentResolver.
+        // Use the {@link BookEntry#CONTENT_URI} to indicate that we want to insert
+        // into the books database table.
+        // Receive the new content URI that will allow us to access Bookstore1 data in the future.
+        Uri newUri = getContentResolver().insert(BookContract.BookEntry.CONTENT_URI, values);
     }
 
     /**
      * Helper method to delete all pets in the database.
      */
-    private void deleteAllPets() {
-        int rowsDeleted = getContentResolver().delete(PetEntry.CONTENT_URI, null, null);
-        Log.v("CatalogActivity", rowsDeleted + " rows deleted from pet database");
+    private void deleteAllBooks() {
+        int rowsDeleted = getContentResolver().delete(BookContract.BookEntry.CONTENT_URI, null, null);
+        Log.v("CatalogActivity", rowsDeleted + " rows deleted from book database");
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_catalog.xml file.
         // This adds menu items to the app bar.
-        getMenuInflater().inflate(com.example.ladyg.ericabookstorestage1.R.menu.menu_catalog, menu);
+        getMenuInflater().inflate(com.example.ladyg.bookstore1.R.menu.menu_catalog, menu);
         return true;
     }
 
@@ -107,12 +124,12 @@ public class CatalogActivity extends AppCompatActivity implements
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
             // Respond to a click on the "Insert dummy data" menu option
-            case com.example.ladyg.ericabookstorestage1.R.id.action_insert_dummy_data:
-                insertPet();
+            case com.example.ladyg.bookstore1.R.id.action_insert_dummy_data:
+                insertBook();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
-            case com.example.ladyg.ericabookstorestage1.R.id.action_delete_all_entries:
-                deleteAllPets();
+            case com.example.ladyg.bookstore1.R.id.action_delete_all_entries:
+                deleteAllBooks();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -122,13 +139,13 @@ public class CatalogActivity extends AppCompatActivity implements
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Define a projection that specifies the columns from the table we care about.
         String[] projection = {
-                PetEntry._ID,
-                PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED };
+                BookContract.BookEntry._ID,
+                BookContract.BookEntry.COLUMN_PRODUCT_NAME,
+                BookContract.BookEntry.COLUMN_PRICE };
 
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this,   // Parent activity context
-                PetEntry.CONTENT_URI,   // Provider content URI to query
+                BookContract.BookEntry.CONTENT_URI,   // Provider content URI to query
                 projection,             // Columns to include in the resulting Cursor
                 null,                   // No selection clause
                 null,                   // No selection arguments

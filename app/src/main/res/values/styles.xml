@@ -8,4 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="CategoryStyle">Category style</style>
+
+    <style name="EditorFieldStyle">Editor field style</style>
+
 </resources>

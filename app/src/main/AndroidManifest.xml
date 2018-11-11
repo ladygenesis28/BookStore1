@@ -10,12 +10,25 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".CatalogActivity">
+            android:label="Book">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".EditorActivity"
+            android:label="Add a Book"
+            android:parentActivityName=".CatalogActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".CatalogActivity" />
+        </activity>
+        <provider
+            android:authorities="com.example.ladyg.bookstore1"
+            android:name=".Data.BookProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>
